@@ -1,0 +1,29 @@
+{
+  "name": "eth-typed-data",
+  "version": "0.1.0",
+  "description": "A library to simplifiy interacting with and signing EIP712 typed data",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com/uport-project/eip712-utils"
+  },
+  "keywords": [
+    "ethereum",
+    "eip712",
+    "erc712",
+    "typed data",
+    "sign",
+    "uport"
+  ],
+  "author": "Rob Whitaker (@rmw2)",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^23.6.0"
+  },
+  "dependencies": {
+    "js-sha3": "^0.8.0"
+  }
+}
