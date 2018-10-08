@@ -1,4 +1,4 @@
-# `eth-typed-data`: Typed Structured Data, On-Chain and Off
+# Typed Structured Data, On-Chain and Off
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com)
 [![Twitter Follow](https://img.shields.io/twitter/follow/uport_me.svg?style=social&label=Follow)](https://twitter.com/uport_me)
 
