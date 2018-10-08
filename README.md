@@ -183,7 +183,7 @@ The primitive types in the EIP712 spec are divided into two categories:
 **TODO: Table defining each type and equivalent/compatible javascript type and validation**
 
 | Solidity Type | Javascript Type | Validation Notes | 
-------------------- 
+|---------------|-----------------|------------------| 
 |`bytes1` | | |
 |`bytes2` | | |
 |`bytes4` | | |
