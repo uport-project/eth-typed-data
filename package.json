@@ -24,6 +24,7 @@
     "jest": "^23.6.0"
   },
   "dependencies": {
+    "ethereumjs-abi": "^0.6.5",
     "js-sha3": "^0.8.0"
   }
 }
