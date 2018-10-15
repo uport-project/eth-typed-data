@@ -1,6 +1,7 @@
 import abi from 'ethereumjs-abi'
 import { keccak256 } from 'js-sha3'
 
+import AbstractType from './AbstractType'
 import { isPrimitiveType, isDynamicType, isAtomicType } from './primitives'
 
 /**
@@ -51,7 +52,7 @@ export default function Type (primaryType, defs) {
    * type's definition, and provides methods to encode the type in various formats, and 
    * sign it with a provided signer.
    */
-  class TypeClass {
+  class TypeClass extends AbstractType {
     static name = primaryType
     static properties = properties
     static dependencies = dependencies
@@ -98,46 +99,17 @@ export default function Type (primaryType, defs) {
     }
 
     /**
-     * @static
-     * Gather the type definition into a single string
-     * @returns {String} The full encoding of the type, including all dependent types
+     * @override @static
+     * Return the part of the type encoding that consists of the dependent types
+     * i.e. the nested Structure types contained by this type.
+     * @returns {String} A string encoding all types upon which this type depends
      */
-    static encodeType() {
-      const sortedEncodedDeps = this.dependencies.map(t => domain.types[t].encodeTypeFragment())
-      return `${this.encodeTypeFragment()}${sortedEncodedDeps.join('')}`
+    static encodeDependentTypes() {
+      return this.dependencies.map(t => domain.types[t].encodeTypeFragment())
     }
 
     /**
-     * @static
-     * Gather the type definition as a single string, without including 
-     * definitions of dependent types
-     * @returns {String} 
-     */
-    static encodeTypeFragment() {
-      return `${primaryType}(${properties.map(({name, type}) => `${type} ${name}`).join(',')})`
-    }
-
-    /**
-     * @static
-     * Calculate the keccak256 hash of the abi encoding of this type according
-     * to the EIP712 specification
-     * @returns {String} the typeHash of this type
-     */
-    static typeHash() {
-      return keccak256(this.encodeType())
-    }
-
-    /**
-     * @static
-     * Return a list of {name, type} pairs that define this type as a new object 
-     * @returns {Object[]}
-     */
-    static typeDef() {
-      // Use map to deep copy the properties array
-      return properties.map(({name, type}) => ({name, type}))
-    }
-
-    /**
+     * @override
      * Return a bare object representation of this instance (as a new object)
      * // TODO: allow recursive decomposition
      * @returns {Object} new object containing same key-value pairs of this instance
@@ -162,6 +134,7 @@ export default function Type (primaryType, defs) {
     }
 
     /**
+     * @override
      * Return the EIP712 data encoding of this instance, padding each member
      * to 32 bytes and hashing the result.  The ethereumjs-abi module provides
      * an encode() function which does most of the heavy lifting here, and the
@@ -174,7 +147,7 @@ export default function Type (primaryType, defs) {
       let types = ['bytes32']
       let values = [this.typeHash()]
 
-      for (const {type, name} of TypeClass.properties) {
+      for (const {type, name} of this.constructor.properties) {
         if (isDynamicType(type)) {
           types.push('bytes32')
           values.push(keccak256(this[name]))
@@ -196,15 +169,6 @@ export default function Type (primaryType, defs) {
       }
 
       return abi.rawEncode(types, values)
-    }
-
-    /**
-     * Calculate the EIP712 hash for this object according to the specification
-     * @returns {String} the keccak256 hash of the concatenation of the typeHash,
-     *                   and the encoded data of this instance
-     */
-    hashStruct() {
-      return keccak256(`${TypeClass.typeHash()}${this.encodeData()}`)
     }
 
     /**
