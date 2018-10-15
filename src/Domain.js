@@ -1,5 +1,8 @@
+import abi from 'ethereumjs-abi'
+
 import AbstractType from './AbstractType'
 import { Type } from './Type'
+import { keccak256 } from 'js-sha3';
 
 // ALl of the 
 const EIP712DomainProperties = [
@@ -88,9 +91,17 @@ function EIP712Domain(def) {
 
     /**
      * @override
+     * A simplified encodeData function that only needs to handle string
+     * and atomic types.  Still defers to abi.rawEncode.
+     * @returns {String} encoding of the definition of this Domain
      */
     encodeData() {
-      
+      const types = this.constructor.properties.map(({type}) => 
+        type === 'string' ? 'bytes32' : type)
+      const values = this.constructor.properties.map(({name, type}) => 
+        type === 'string' ? keccak256(this.vals[name]) : this.vals[name])
+
+      return abi.rawEncode(types, values)
     }
 
     /**
