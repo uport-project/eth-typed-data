@@ -2,7 +2,7 @@ import abi from 'ethereumjs-abi'
 import { keccak256 } from 'js-sha3'
 
 import AbstractType from './AbstractType'
-import { isPrimitiveType, isDynamicType, isAtomicType } from './primitives'
+import { isPrimitiveType, isDynamicType, isAtomicType, validate as validatePrimitive } from './primitives'
 
 /**
  * A factory function which returns a class representing an EIP712 Type
@@ -58,6 +58,7 @@ export default function Type (primaryType, defs) {
     static dependencies = dependencies
 
     constructor (vals) {
+      super()
       this.name = primaryType
       this.properties = properties
 
@@ -91,6 +92,7 @@ export default function Type (primaryType, defs) {
      * @returns {Boolean} whether or not a particular object is a valid instance of this type
      */
     static validate(obj) {
+      // TODO: Check for missing props 
       this.properties.map(({type, name}) => ({
         [name]: isPrimitiveType(type)
           ? validatePrimitive[type](obj[name])
@@ -197,7 +199,7 @@ export default function Type (primaryType, defs) {
   }
 
   // Save the new TypeClass to the domain
-  domain.types[name] = TypeClass
+  domain.types[primaryType] = TypeClass
 
   return TypeClass
 }

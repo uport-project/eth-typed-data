@@ -6,7 +6,7 @@ import { keccak256 } from 'js-sha3'
   * the EIP712 scheme.  Both domains and proper Struct types inherit from this
   * class, as the static encoding functionality is required by each.
   */
-class AbstractType {
+export default class AbstractType {
   static name
   static properties
 
@@ -16,7 +16,7 @@ class AbstractType {
     * definitions of dependent types
     * @returns {String} 
     */
-   static encodeTypeFragment() {
+  static encodeTypeFragment() {
     return `${this.name}(${this.properties.map(({name, type}) => `${type} ${name}`).join(',')})`
   }
 

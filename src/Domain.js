@@ -1,10 +1,11 @@
 import abi from 'ethereumjs-abi'
+import { keccak256 } from 'js-sha3'
 
 import AbstractType from './AbstractType'
-import { Type } from './Type'
-import { keccak256 } from 'js-sha3';
+import Type from './Type'
+import { validate } from './primitives'
 
-// ALl of the 
+// The set of properties that a EIP712Domain MAY implement
 const EIP712DomainProperties = [
   { name: "name", type: "string" },
   { name: "version", type: "string" },
@@ -24,7 +25,7 @@ const EIP712DomainProperties = [
  * @param   {Object} def   The definition of the EIP712 domain
  * @returns {Object}       An instantiated EIP712Domain type with the specified properties
  */
-function EIP712Domain(def) {
+export default function EIP712Domain(def) {
   const vals = {}
   // Extract the EIP712 domain properties that were provided
   const properties = EIP712DomainProperties.reduce((props, {name, type}) => {
@@ -56,6 +57,7 @@ function EIP712Domain(def) {
     static dependencies = []
 
     constructor(vals) {
+      super()
       this.vals = vals
 
       // The types object maps String names to the type prototypes that exist
@@ -65,6 +67,12 @@ function EIP712Domain(def) {
 
       // Precompute the domainSeparator for use with signing types in this domain
       this.domainSeparator = this.hashStruct()
+    
+      /**
+       * Construct a new type that will be associated with this domain
+       * @returns {Function}  the constructor for the new type class
+       */
+      this.createType = Type.bind(this)
     }
 
     /**
@@ -110,12 +118,6 @@ function EIP712Domain(def) {
     toObject() {
       return {...this.vals}
     }
-    
-    /**
-     * Construct a new type that will be associated with this domain
-     * @returns {Function}  the constructor for the new type class
-     */
-    createType = Type.bind(this)
   }
 
   return new Domain(vals)
