@@ -6,7 +6,7 @@ import Type from './Type'
 import { validate } from './primitives'
 
 // The set of properties that a EIP712Domain MAY implement
-const EIP712DomainProperties = [
+export const EIP712DomainProperties = [
   { name: "name", type: "string" },
   { name: "version", type: "string" },
   { name: "chainId", type: "uint256" },
@@ -40,6 +40,8 @@ export default function EIP712Domain(def) {
   // Throw an error if extra properties were provided
   if (Object.keys(vals).length !== Object.keys(def).length) {
     throw new Error('Extra key in EIP712Domain definition')
+  } else if (Object.keys(def).length === 0) {
+    throw new Error('Must supply at least one EIP712Domain property')
   }
 
   /**
@@ -82,7 +84,7 @@ export default function EIP712Domain(def) {
      */
     listTypes() {
       return Object.keys(this.types)
-        .reduce((obj, t) => ({...obj, [t]: this.types[t].toTypeDef()}), {})
+        .reduce((obj, t) => ({...obj, [t]: this.types[t].typeDef()}), {})
     }
 
     /**
@@ -92,7 +94,7 @@ export default function EIP712Domain(def) {
      */
     toDomainDef() {
       return {
-        [name]: this.toTypeDef(), 
+        [this.constructor.name]: this.constructor.typeDef(), 
         ...this.listTypes()
       }
     }
