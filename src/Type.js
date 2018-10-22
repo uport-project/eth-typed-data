@@ -175,12 +175,20 @@ export default function Type (primaryType, defs) {
 
     /**
      * ABI encode this type according to the EIP712 spec. The encoding returned
-     * is compatible with solidity, and ready to be signed.
-     * @returns {String} The abi encoding of this instance, in an appropriate format to be signed
+     * is compatible with solidity, and ready to be hashed and signed.
+     * @returns {String} The abi encoding of this instance, in an appropriate format to be hashed and signed
      */
     encode() {
       // \x19\x01 is the specified prefix for a typedData message
       return `\x19\x01${domain.domainSeparator}${this.hashStruct()}`
+    }
+
+    /**
+     * Return the hash to be signed, simply the Keccak256 of the encoding
+     * @returns {String} The hash, ready to be signed
+     */
+    signHash() {
+      return keccak256(this.encode())
     }
 
     /**
@@ -194,7 +202,7 @@ export default function Type (primaryType, defs) {
         throw new Error('Must provide a signer object with a sign() method')
       }
 
-      return signer.sign(this.encode())
+      return signer.sign(this.signHash())
     }
   }
 
