@@ -6,25 +6,25 @@ describe('AbstractType', () => {
   })
 })
 
-// Type that extends AbstractType for testing static methods
-class ConcreteType extends AbstractType {
-  static name = 'Concrete'
-  static properties = [
-    {name: 'abstract', type: 'bool'},
-    {name: 'concrete', type: 'bool'},
-    {name: 'pasta', type: 'string'}
-  ]
-
-  static encodeDependentTypes() {
-    return 'DEPENDENTTYPES'
-  }
-
-  encodeData() {
-    return ''
-  }
-}
-
 describe('Concrete subtypes of abstract type', () => {
+  // Type that extends AbstractType for testing static methods
+  class ConcreteType extends AbstractType {
+    static name = 'Concrete'
+    static properties = [
+      {name: 'abstract', type: 'bool'},
+      {name: 'concrete', type: 'bool'},
+      {name: 'pasta', type: 'string'}
+    ]
+
+    static encodeDependentTypes() {
+      return 'DEPENDENTTYPES'
+    }
+
+    encodeData() {
+      return ''
+    }
+  }
+
   it('supports typeDef', () => {
     expect(ConcreteType.typeDef()).toEqual(ConcreteType.properties)
   })

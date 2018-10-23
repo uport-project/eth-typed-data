@@ -7,7 +7,6 @@ describe('MailExample', () => {
   const { 
     Person: personDef, 
     Mail: mailDef, 
-    EIP712Domain: domainDef 
   } = MailExample.request.types
   const {
     encodeType, typeHash, encodeData, hashStruct, signHash
@@ -25,7 +24,7 @@ describe('MailExample', () => {
   })
 
   test('domainSeparator', () => {
-    expect(Domain.domainSeparator).toEqual(MailExample.results.domainSeparator)
+    expect(`0x${Domain.domainSeparator}`).toEqual(MailExample.results.domainSeparator)
   })
 
   test('toSignatureRequest', () => {
@@ -37,19 +36,19 @@ describe('MailExample', () => {
   })
 
   test('typeHash', () => {
-    expect(Mail.typeHash()).toEqual(typeHash)
+    expect(`0x${Mail.typeHash()}`).toEqual(typeHash)
   })
 
   test('encodeData', () => {
-    expect(message.encodeData()).toEqual(encodeData)
+    expect(`0x${message.encodeData()}`).toEqual(encodeData)
   })
 
   test('hashStruct', () => {
-    expect(message.hashStruct()).toEqual(hashStruct)
+    expect(`0x${message.hashStruct()}`).toEqual(hashStruct)
   })
 
   test('signHash', () => {
-    expect(message.signHash()).toEqual(signHash)
+    expect(`0x${message.signHash()}`).toEqual(signHash)
   })
 })
 
