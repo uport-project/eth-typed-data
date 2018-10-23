@@ -38,6 +38,14 @@ export const validate = {
 }
 
 /**
+ * Return true if the argument is an array type
+ * @param {String} type 
+ */
+export function isArrayType(type) {
+  return type.slice(-2) === '[]'
+}
+
+/**
  * Return true if the argument is an atomic type in the EIP712 schema
  * @param {String} type 
  * @returns {Boolean}

@@ -2,7 +2,11 @@ import abi from 'ethereumjs-abi'
 import { keccak256 } from 'js-sha3'
 
 import AbstractType from './AbstractType'
-import { isPrimitiveType, isDynamicType, isAtomicType, validate as validatePrimitive } from './primitives'
+import { 
+  isArrayType, isPrimitiveType, 
+  isDynamicType, isAtomicType,
+  validate as validatePrimitive 
+} from './primitives'
 
 /**
  * A factory function which returns a class representing an EIP712 Type
@@ -147,7 +151,7 @@ export default function Type (primaryType, defs) {
     encodeData() {
       // Build parallel lists of types and values, to be passed to abi.encode
       let types = ['bytes32']
-      let values = [this.typeHash()]
+      let values = [this.constructor.typeHash()]
 
       for (const {type, name} of this.constructor.properties) {
         if (isDynamicType(type)) {
