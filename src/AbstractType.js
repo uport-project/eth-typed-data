@@ -11,7 +11,7 @@ export default class AbstractType {
   static properties
 
   /**
-    * @static
+    * @static @private
     * Gather the type definition as a single string, without including 
     * definitions of dependent types
     * @returns {String} 
@@ -21,7 +21,7 @@ export default class AbstractType {
   }
 
   /**
-   * @static @abstract
+   * @static @abstract @private
    * Return the encoding of all types upon which this type depends. Only implemented
    * by types that support dependencies, i.e. structure types (not Domain types)
    */
