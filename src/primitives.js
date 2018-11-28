@@ -1,11 +1,11 @@
-const ATOMICS = [
+export const ATOMICS = [
   'bytes1', 'bytes2', 'bytes4', 'bytes8', 'bytes16', 'bytes32',
   'uint8', 'uint16', 'uint32', 'uint64', 'uint128', 'uint256',
   'int8', 'int16', 'int32', 'int64', 'int128', 'int256',
   'address', 'bool'
 ]
 
-const DYNAMICS = [
+export const DYNAMICS = [
   'string', 'bytes'
 ]
 
@@ -42,7 +42,7 @@ export const validate = {
  * @param {String} type 
  */
 export function isArrayType(type) {
-  return type.slice(-2) === '[]'
+  return type.length > 2 && type.slice(-2) === '[]'
 }
 
 /**
