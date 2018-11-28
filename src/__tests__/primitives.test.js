@@ -46,6 +46,16 @@ describe('type indicators', () => {
 
     expect(isPrimitiveType('EIP712Domain')).toBe(false)
   })
+
+  it('identifies array types', () => {
+    expect(isArrayType('mytype[]')).toBe(true)
+ 
+    expect(isArrayType('[]')).toBe(false)
+    expect(isArrayType('mytype[')).toBe(false)
+    expect(isArrayType('mytype]')).toBe(false)
+    expect(isArrayType('mytype][')).toBe(false)
+    expect(isArrayType('mytype[] ')).toBe(false)
+  })
 })
 
 describe.skip('validate', () => {

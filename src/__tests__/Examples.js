@@ -31,6 +31,10 @@ describe('MailExample', () => {
     expect(message.toSignatureRequest()).toEqual(MailExample.request)
   })
 
+  test('toObject', () => {
+    expect(message.toObject()).toEqual(MailExample.request.message)
+  })
+
   test('encodeType', () => {
     expect(Mail.encodeType()).toEqual(encodeType)
   })
