@@ -1,3 +1,4 @@
+const util = require('ethereumjs-util')
 // Example tests
 const { EIP712Domain } = require('..')
 
@@ -24,7 +25,7 @@ describe('MailExample', () => {
   })
 
   test('domainSeparator', () => {
-    expect(`0x${Domain.domainSeparator}`).toEqual(MailExample.results.domainSeparator)
+    expect(util.bufferToHex(Domain.domainSeparator)).toEqual(MailExample.results.domainSeparator)
   })
 
   test('toSignatureRequest', () => {
@@ -40,19 +41,19 @@ describe('MailExample', () => {
   })
 
   test('typeHash', () => {
-    expect(`0x${Mail.typeHash()}`).toEqual(typeHash)
+    expect(util.bufferToHex(Mail.typeHash())).toEqual(typeHash)
   })
 
   test('encodeData', () => {
-    expect(`0x${message.encodeData()}`).toEqual(encodeData)
+    expect(util.bufferToHex(message.encodeData())).toEqual(encodeData)
   })
 
   test('hashStruct', () => {
-    expect(`0x${message.hashStruct()}`).toEqual(hashStruct)
+    expect(util.bufferToHex(message.hashStruct())).toEqual(hashStruct)
   })
 
   test('signHash', () => {
-    expect(`0x${message.signHash()}`).toEqual(signHash)
+    expect(util.bufferToHex(message.signHash())).toEqual(signHash)
   })
 })
 

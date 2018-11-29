@@ -45,7 +45,7 @@ export default class AbstractType {
     * @returns {String} the typeHash of this type
     */
   static typeHash() {
-    return keccak256(this.encodeType())
+    return Buffer.from(keccak256(this.encodeType()), 'hex')
   }
 
   /**
@@ -64,7 +64,7 @@ export default class AbstractType {
    *                   and the encoded data of this instance
    */
   hashStruct() {
-    return keccak256(`${this.constructor.typeHash()}${this.encodeData()}`)
+    return Buffer.from(keccak256(this.encodeData()), 'hex')
   }
 
   /********************************************************************

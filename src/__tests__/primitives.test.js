@@ -1,4 +1,4 @@
-import { isPrimitiveType, isAtomicType, isDynamicType } from '../primitives'
+import { isPrimitiveType, isAtomicType, isDynamicType, isArrayType } from '../primitives'
 
 const POWERS = [1, 2, 4, 8, 16, 32]
 

@@ -25,6 +25,9 @@ describe('Type [factory]', () => {
   })
 
   it('Encodes itself including dependent types', () => {
-    const Person = Domain.createType({})
+    Domain.createType('Test', {test: 'string'})
+    const Nest = Domain.createType('Nest', {nest: 'Test', more: 'string'})
+
+    expect(Nest.encodeType()).toEqual('Nest(Test nest,string more)Test(string test)')
   })
 })

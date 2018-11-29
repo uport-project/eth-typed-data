@@ -39,6 +39,6 @@
   },
   "jest": {
     "coverageDirectory": ".coverage",
-    "testPathIgnorePatterns": ["/node_modules/", "/lib/", "/dist/"]
+    "testPathIgnorePatterns": ["/node_modules/", "/lib/", "/dist/", "/demo/"]
   }
 }
