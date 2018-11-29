@@ -3,7 +3,7 @@ import { keccak256 } from 'js-sha3'
 
 import AbstractType from './AbstractType'
 import Type from './Type'
-import { validate } from './primitives'
+import { validate as validatePrimitive, isArrayType, isPrimitiveType } from './primitives'
 
 // The set of properties that a EIP712Domain MAY implement
 export const EIP712DomainProperties = [
@@ -32,7 +32,7 @@ export default function EIP712Domain(def) {
     // Skip unused EIP712 types
     if (!(name in def)) return props
     // Validate primitive types
-    vals[name] = validate[type](def[name])
+    vals[name] = validatePrimitive[type](def[name])
     // Include property in type definition
     return [...props, {name, type}]
   }, [])
@@ -78,6 +78,56 @@ export default function EIP712Domain(def) {
     }
 
     /**
+     * Validate that a particular object conforms to a valid type definition in this domain, 
+     * and return a standardized version of input value.  In particular, structure types will
+     * be coerced to an instance of the corresponding structure class, array types will validate
+     * each item according to the base type of the array, and primitive types will be validated
+     * by the appropriate validator in `validatePrimitive`
+     *
+     * @param   {String}  type  the string name of the type of the value being validated
+     * @param   {Any}     val   the candidate value of the type to be validated/standardized
+     * @returns {Any}           the standardized/validated representation of this
+     * 
+     * @throws  {Error} if the input is an invalid instance of the given type
+     */
+    validate(type, val) {
+      if (isArrayType(type)) {
+        // Apply the validator to each item in an array, using the base type
+        return val.map(item => this.validate(type.slice(0, -2), item))
+      } else if (isPrimitiveType(type)) {
+        return validatePrimitive[type](val)
+      } else if (type in this.types) {
+        const StructType = this.types[type]
+        return (val instanceof StructType) ? val : new StructType(val)
+      } else {
+        throw new Error(`Type ${type} not recognized in this domain`)
+      }
+    }
+
+    /**
+     * Recursively expand an object containing instances of structure type classes,
+     * and return a bare javascript object with the same hierarchical structure
+     * Conceptually the opposite of this.validate
+     * @param   {String}  type the string name of the type of value being serialized
+     * @param   {Any}     val  the type instance or primitive literal being serialized
+     * @returns {Object}
+     * @throws  {Error}
+     */
+    serialize(type, val) {
+      if (type in this.types) {
+        // Recursively expand nested structure types
+        return val.toObject()
+      } else if (isArrayType(type)) {
+        // Map serializer to array types
+        return val.map(item => serialize(type.slice(0, -2), item))
+      } else if (isPrimitiveType(type)) {
+        return val
+      } else {
+        throw new Error(`Type ${type} is not a valid type in this domain`)
+      }
+    }
+
+    /**
      * Return an object mapping the names of types contained by this domain
      * to their list-style type definitions
      * @returns {Object}  Mapping from type name -> type definition
@@ -109,9 +159,12 @@ export default function EIP712Domain(def) {
       const types = this.constructor.properties.map(({type}) => 
         type === 'string' ? 'bytes32' : type)
       const values = this.constructor.properties.map(({name, type}) => 
-        type === 'string' ? keccak256(this.vals[name]) : this.vals[name])
+        type === 'string' ? Buffer.from(keccak256(this.vals[name]), 'hex') : this.vals[name])
 
-      return abi.rawEncode(types, values)
+      return abi.rawEncode(
+        ['bytes32', ...types], 
+        [Buffer.from(this.constructor.typeHash(), 'hex'), ...values]
+      )
     }
 
     /**

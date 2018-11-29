@@ -5,7 +5,6 @@ import AbstractType from './AbstractType'
 import { 
   isArrayType, isPrimitiveType, 
   isDynamicType, isAtomicType,
-  validate as validatePrimitive 
 } from './primitives'
 
 /**
@@ -73,35 +72,14 @@ export default function Type (primaryType, defs) {
           throw new Error(`Type ${this.name} missing required property ${prop.name}`)
         }
 
-        this._object[prop.name] = vals[prop.name]
-
         // Expose getters and setters for this.prop, validating on set
         Object.defineProperty(this, prop.name, {
           get: () => this._object[prop.name],
-          set: (val) => {
-            this._object[prop.name] = isPrimitiveType(prop.type)
-              ? validatePrimitive[prop.type](val)
-              : domain.types[prop.type].validate(val)
-          }
+          set: (val) => this._object[prop.name] = domain.validate(prop.type, val) 
         })
-      }
-    }
 
-    /**
-     * @static
-     * Validate that a particular object conforms to this class' type defintion,
-     * recursively applying the validation function for each nested type, and making a
-     * deep copy of the object in the process.
-     * @param   {Object}  obj   the potential instance of this type to be validated
-     * @returns {Boolean} whether or not a particular object is a valid instance of this type
-     */
-    static validate(obj) {
-      // TODO: Check for missing props 
-      this.properties.map(({type, name}) => ({
-        [name]: isPrimitiveType(type)
-          ? validatePrimitive[type](obj[name])
-          : domain.types[type].validate(obj[name])
-      })).reduce(kv => ({...obj, ...kv}), {})
+        this._object[prop.name] = domain.validate(prop.type, vals[prop.name])
+      }
     }
 
     /**
@@ -117,11 +95,13 @@ export default function Type (primaryType, defs) {
     /**
      * @override
      * Return a bare object representation of this instance (as a new object)
-     * // TODO: allow recursive decomposition
+     * 
      * @returns {Object} new object containing same key-value pairs of this instance
      */
     toObject() {
-      return { ...this._object }
+      // Generate a new bare object, with each complex item decomposed into regular javascript objects and arrays
+      return properties.reduce((obj, {name, type}) => 
+        ({...obj, [name]: domain.serialize(type, this._object[name])}), {})
     }
 
     /**
@@ -151,22 +131,22 @@ export default function Type (primaryType, defs) {
     encodeData() {
       // Build parallel lists of types and values, to be passed to abi.encode
       let types = ['bytes32']
-      let values = [this.constructor.typeHash()]
+      let values = [Buffer.from(this.constructor.typeHash(), 'hex')]
 
       for (const {type, name} of this.constructor.properties) {
         if (isDynamicType(type)) {
+          // Dynamic types are hashed
           types.push('bytes32')
-          values.push(keccak256(this[name]))
+          values.push(Buffer.from(keccak256(this[name]), 'hex'))
         } else if (type in domain.types) {
-          // Potentially inefficient: construct a new type and call its encodeData method
-          const SubType = domain.types[type]
-          const encodedSubtype = (new SubType(this[name])).encodeData()
-          // Hash the encoded data of the subtype
+          // Structure Types are recursively encoded and hashed
           types.push('bytes32')
-          values.push(keccak256(encodedSubtype))
+          values.push(Buffer.from(keccak256(this[name].encodeData()), 'hex'))
         } else if (isArrayType(type)) {
+          // TODO: Figure out the spec for encoding array types
           throw new Error('Array types not yet supported')
         } else if (isAtomicType(type)) {
+          // Atomic types have their encoding defined by the solidity ABI
           types.push(type)
           values.push(this[name])
         } else {
@@ -184,7 +164,11 @@ export default function Type (primaryType, defs) {
      */
     encode() {
       // \x19\x01 is the specified prefix for a typedData message
-      return `\x19\x01${domain.domainSeparator}${this.hashStruct()}`
+      return Buffer.concat([
+        Buffer.from([0x19, 0x01]),
+        domain.domainSeparator,
+        this.hashStruct()
+      ])
     }
 
     /**
@@ -192,7 +176,7 @@ export default function Type (primaryType, defs) {
      * @returns {String} The hash, ready to be signed
      */
     signHash() {
-      return keccak256(this.encode())
+      return Buffer.from(keccak256(this.encode()), 'hex')
     }
 
     /**
