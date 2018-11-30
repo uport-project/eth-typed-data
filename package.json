@@ -4,7 +4,7 @@
   "description": "A library to simplifiy interacting with and signing EIP712 typed data",
   "main": "src/index.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest --coverage",
     "build": "./node_modules/.bin/babel src -d lib"
   },
   "repository": {
