@@ -214,7 +214,7 @@ function validateTypeDefinition({name, type}, domain) {
 
   if (typeof type === 'object') {
     // TODO: Allow recursive type defintions?
-    throw new Error('Recursive type definitions not supported')
+    throw new Error('Nested type definitions not supported')
   } else if (!isPrimitiveType(type) && !(type in domain.types)) {
     // Refuse undefined, non-primitive types
     throw new Error(`Type ${type} is undefined in this domain`)
