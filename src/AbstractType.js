@@ -72,7 +72,12 @@ export default class AbstractType {
    *******************************************************************/
 
   /** @abstract */
-  encodeData() {}
+  encodeData() {
+    throw new Error('This is an abstract class, Subclasses of AbstractType should override encodeData()')
+  }
+
   /** @abstract */
-  toObject() {}
+  toObject() {
+    throw new Error('This is an abstract class, Subclasses of AbstractType should override toObject()')
+  }
 }
