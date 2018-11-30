@@ -36,6 +36,69 @@ describe('EIP712Domain', () => {
   })
 })
 
+describe('validate', () => {
+  const d = new EIP712Domain(domainDef)
+  const MyType = d.createType('MyType', {data: 'string'})
+
+  it('validates primitive types', () => {
+    const num = 25
+    expect(d.validate('uint8', num)).toEqual(num)
+  })
+
+  it('validates arrays of primitive types', () => {
+    const arr = [0, 1, 2, 3]
+    expect(d.validate('int32[]', arr)).toEqual(arr)
+  })
+
+  it('validates structure type instances', () => {
+    const myObject = new MyType({data: 'hello'})
+    expect(d.validate('MyType', myObject)).toEqual(myObject)
+  })
+
+  it('validates bare object structure types', () => {
+    const data = { data: 'hello' }
+    expect(d.validate('MyType', data).toObject()).toEqual(data)
+  })
+
+  it('validates arrays of structure types', () => {
+    const myObjects = [new MyType({data: '1'}), new MyType({data: '2'}), new MyType({data: '3'})]
+    expect(d.validate('MyType[]', myObjects)).toEqual(myObjects)
+  })
+
+  it('fails to validate invalid types', () => {
+    expect(() => d.validate('FakeType', {data: 'fake'})).toThrow()
+  })
+})
+
+describe('serialize', () => {
+  const d = new EIP712Domain(domainDef)
+  const MyType = d.createType('MyType', {data: 'string'})
+
+  it('serializes primitive types', () => {
+    const num = 25
+    expect(d.serialize('uint8', num)).toEqual(num)
+  })
+
+  it('serializes arrays of primitive types', () => {
+    const arr = [0, 1, 2, 3]
+    expect(d.serialize('int32[]', arr)).toEqual(arr)
+  })
+
+  it('serializes structure type instances', () => {
+    const myObject = new MyType({data: 'hello'})
+    expect(d.serialize('MyType', myObject)).toEqual(myObject.toObject())
+  })
+
+  it('serializes arrays of structure types', () => {
+    const myObjects = [new MyType({data: '1'}), new MyType({data: '2'}), new MyType({data: '3'})]
+    expect(d.serialize('MyType[]', myObjects)).toEqual(myObjects.map(x => x.toObject()))
+  })
+
+  it('fails to serialize invalid types', () => {
+    expect(() => d.serialize('FakeType', {data: 'fake'})).toThrow()
+  })
+})
+
 describe('toDomainDef', () => {
   it('lists itself if there are no other types', () => {
     const domain = new EIP712Domain(domainDef)
@@ -60,6 +123,4 @@ describe('Types in the Domain', () => {
   it('Creates a valid signature request', () => {
 
   })
-
-
 })

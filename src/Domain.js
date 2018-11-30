@@ -3,7 +3,7 @@ import { keccak256 } from 'js-sha3'
 
 import AbstractType from './AbstractType'
 import Type from './Type'
-import { validate as validatePrimitive, isArrayType, isPrimitiveType } from './primitives'
+import { validate as validatePrimitive, isArrayType, isPrimitiveType, getBaseType } from './primitives'
 
 // The set of properties that a EIP712Domain MAY implement
 export const EIP712DomainProperties = [
@@ -60,7 +60,7 @@ export default function EIP712Domain(def) {
 
     constructor(vals) {
       super()
-      this.vals = vals
+      this.vals = { ...vals }
 
       // The types object maps String names to the type prototypes that exist
       // within this domain.  Prototypes are appendended to this.types for every
@@ -93,7 +93,7 @@ export default function EIP712Domain(def) {
     validate(type, val) {
       if (isArrayType(type)) {
         // Apply the validator to each item in an array, using the base type
-        return val.map(item => this.validate(type.slice(0, -2), item))
+        return val.map(item => this.validate(getBaseType(type), item))
       } else if (isPrimitiveType(type)) {
         return validatePrimitive[type](val)
       } else if (type in this.types) {
@@ -119,7 +119,7 @@ export default function EIP712Domain(def) {
         return val.toObject()
       } else if (isArrayType(type)) {
         // Map serializer to array types
-        return val.map(item => serialize(type.slice(0, -2), item))
+        return val.map(item => this.serialize(getBaseType(type), item))
       } else if (isPrimitiveType(type)) {
         return val
       } else {
