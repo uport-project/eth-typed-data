@@ -4,7 +4,8 @@
   "description": "A library to simplifiy interacting with and signing EIP712 typed data",
   "main": "src/index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest --coverage",
+    "build": "./node_modules/.bin/babel src -d lib"
   },
   "repository": {
     "type": "git",
@@ -21,9 +22,23 @@
   "author": "Rob Whitaker (@rmw2)",
   "license": "ISC",
   "devDependencies": {
+    "@babel/cli": "^7.1.2",
+    "@babel/core": "^7.1.2",
+    "@babel/plugin-proposal-class-properties": "^7.1.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.0.0",
+    "@babel/plugin-transform-runtime": "^7.1.0",
+    "@babel/preset-env": "^7.1.0",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-jest": "^23.6.0",
     "jest": "^23.6.0"
   },
   "dependencies": {
+    "@babel/runtime": "^7.1.2",
+    "ethereumjs-abi": "^0.6.5",
     "js-sha3": "^0.8.0"
+  },
+  "jest": {
+    "coverageDirectory": ".coverage",
+    "testPathIgnorePatterns": ["/node_modules/", "/lib/", "/dist/", "/demo/"]
   }
 }
