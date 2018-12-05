@@ -177,3 +177,35 @@ export default function EIP712Domain(def) {
 
   return new Domain(vals)
 }
+
+/**
+ * Extend the EIP712Domain factory with a static method to
+ * @param {Object} request 
+ * @returns {Object} 
+ */
+EIP712Domain.fromSignatureRequest = function fromSignatureRequest(request) {
+  const { types, message: rawMessage, primaryType, domain: rawDomain } = request
+
+  // Create the domain instance
+  const domain = new EIP712Domain(rawDomain)
+  
+  // Create all necessary structure types in this domain
+  // This is currently a hack -- there should be a better way of creating each type definition in the proper order
+  // This assumes that there are no circular references, and will infinite loop if there are
+  const items = Object.entries(types)
+  while (items.length > 0) {
+    const [name, def] = items.shift()
+    if (name === 'EIP712Domain') continue
+    try {
+      domain.createType(name, def)
+    } catch {
+      items.push([name, def])
+    }
+  }
+
+  // Create the message instance
+  const MessageType = domain.types[primaryType]
+  const message = new MessageType(rawMessage)
+
+  return { domain, message }
+}
