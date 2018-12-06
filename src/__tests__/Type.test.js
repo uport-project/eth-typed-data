@@ -1,8 +1,11 @@
 
-const util = require('ethereumjs-util')
+import * as util from 'ethereumjs-util'
+import { ec as EC } from 'elliptic'
 
-import Type from '../Type'
-import { EIP712Domain } from '..';
+import EIP712Domain from '../Domain'
+import { toEthereumAddress } from '../verify'
+
+const secp256k1 = EC('secp256k1')
 
 describe('Type [factory]', () => {
   let Domain
@@ -43,6 +46,49 @@ describe('Type [factory]', () => {
   })
 })
 
+describe('Sample Type', () => {
+  let Domain, Inner, Outer
+  beforeAll(() => {
+    Domain = new EIP712Domain({
+      name: 'Test Domain',
+      version: '1.0', 
+      chainId: 0x01,
+      verifyingContract: '0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC',
+      salt: 'salt'
+    })
+
+    Inner = Domain.createType('Inner', [
+      {name: 'data', type: 'string'}
+    ])
+
+    Outer = Domain.createType('Outer', [
+      {name: 'inner', type: 'Inner'},
+      {name: 'data', type: 'string'}
+    ])
+  })
+
+  it('Throws an error if an object is instantiated with missing properties', () => {
+    expect(() => new Outer({inner: {data: 'hello'}})).toThrow()
+    expect(() => new Inner()).toThrow()
+  })
+
+  it('Throws an error if an object is edited with an invalid value', () => {
+    const o = new Outer({data: 'hello', inner: {data: 'hello inside'}})
+    expect(() => o.inner = 'hello').toThrow()
+  })
+
+  it('Throws an error when trying to encode a corrupted object', () => {
+    const i = new Inner({data: 'hello'})
+    // Corrupt properties list
+    Inner.properties = [{name: 'data', type: 'potato'}]
+    expect(() => i.encodeData()).toThrow()
+  })
+
+  it('Throws an error if you attempt to sign without a signer', () => {
+    const i = new Inner({data: 'hello'})
+    expect(i.sign).toThrow()
+  })
+})
 
 describe('MailExample', () => {
   // The provided example from the EIP712 PR
@@ -96,6 +142,15 @@ describe('MailExample', () => {
 
   test('signHash', () => {
     expect(util.bufferToHex(message.signHash())).toEqual(signHash)
+  })
+
+  test('sign and verifySignature', () => {
+    const keypair = secp256k1.genKeyPair()
+    const address = toEthereumAddress(keypair.getPublic().encode('hex'))
+
+    const signature = message.sign(keypair.sign.bind(keypair))
+
+    expect(message.verifySignature(signature, address)).toBe(true)
   })
 })
 

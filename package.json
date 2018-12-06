@@ -30,6 +30,7 @@
     "@babel/preset-env": "^7.1.0",
     "babel-core": "^7.0.0-bridge.0",
     "babel-jest": "^23.6.0",
+    "elliptic": "^6.4.1",
     "jest": "^23.6.0"
   },
   "dependencies": {
@@ -39,6 +40,12 @@
   },
   "jest": {
     "coverageDirectory": ".coverage",
-    "testPathIgnorePatterns": ["/node_modules/", "/lib/", "/dist/", "/demo/"]
+    "testEnvironment": "node",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/lib/",
+      "/dist/",
+      "/demo/"
+    ]
   }
 }
