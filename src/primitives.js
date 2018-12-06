@@ -23,9 +23,9 @@ export function isArrayType(type) {
  * @param   {String} type 
  * @returns {String} 
  */
-export function getBaseType(type) {
+export function getElementaryType(type) {
   if (isArrayType(type)) return type.slice(0,-2)
-  throw new Error("Can't get base of non-array type")
+  throw new Error("Can't get element of non-array type")
 }
 
 /**
@@ -55,29 +55,29 @@ export function isPrimitiveType(type) {
   return isAtomicType(type) || isDynamicType(type)
 }
 
-/**
- * Validation utility function to switch on javascript types and
- * handle each with a custom function
- * @param   {Object}    handlers  An object mapping javascript types to a validation function for that type
- * @returns {Function}  a validation function which will delegate to one of the provided validators
- *                      according to the type of the input
- */
-function handleByType(target, handlers) {
-  return input => {
-    const jstype = typeof input
-    if (jstype in handlers) return handlers[jstype](input)
-    throw new Error(`Cannot convert javascript type ${jstype} to solidity type ${target}`)
-  }
-}
+// /**
+//  * Validation utility function to switch on javascript types and
+//  * handle each with a custom function
+//  * @param   {Object}    handlers  An object mapping javascript types to a validation function for that type
+//  * @returns {Function}  a validation function which will delegate to one of the provided validators
+//  *                      according to the type of the input
+//  */
+// function handleByType(target, handlers) {
+//   return input => {
+//     const jstype = typeof input
+//     if (jstype in handlers) return handlers[jstype](input)
+//     throw new Error(`Cannot convert javascript type ${jstype} to solidity type ${target}`)
+//   }
+// }
 
-/**
- * Throw an error with a given message. This is convenient for throwing
- * an error inside an expression without having to create a full function.
- * @param {String} message message for the error to be thrown
- */
-function reject(message) {
-  throw new Error(message)
-}
+// /**
+//  * Throw an error with a given message. This is convenient for throwing
+//  * an error inside an expression without having to create a full function.
+//  * @param {String} message message for the error to be thrown
+//  */
+// function reject(message) {
+//   throw new Error(message)
+// }
 
 /**
  * Validation functions for unifying javascript representations of solidity types
