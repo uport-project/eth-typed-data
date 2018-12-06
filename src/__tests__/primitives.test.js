@@ -1,4 +1,4 @@
-import { isPrimitiveType, isAtomicType, isDynamicType, isArrayType } from '../primitives'
+import { validate, isPrimitiveType, isAtomicType, isDynamicType, isArrayType, getElementaryType } from '../primitives'
 
 const POWERS = [1, 2, 4, 8, 16, 32]
 
@@ -56,10 +56,24 @@ describe('type indicators', () => {
     expect(isArrayType('mytype][')).toBe(false)
     expect(isArrayType('mytype[] ')).toBe(false)
   })
+
+  it('identifies elementary types of array types', () => {
+    expect(getElementaryType('scoopity[]')).toEqual('scoopity')
+    expect(() => getElementaryType('woopity')).toThrow()
+  })
 })
 
-describe.skip('validate', () => {
-  it('', () => {
-
+describe('validate', () => {
+  it('validates primitive types', () => {
+    for (const p of POWERS) {
+      expect(() => validate[`bytes${p}`]()).not.toThrow()
+      expect(() => validate[`int${8*p}`]()).not.toThrow()
+      expect(() => validate[`uint${8*p}`]()).not.toThrow()
+    }
+    
+    expect(() => validate['address']()).not.toThrow()
+    expect(() => validate['bool']()).not.toThrow()
+    expect(() => validate['string']()).not.toThrow()
+    expect(() => validate['bytes']([0])).not.toThrow()
   })
 })
