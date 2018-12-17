@@ -3,7 +3,7 @@ import { keccak256 } from 'js-sha3'
 
 import AbstractType from './AbstractType'
 import Type from './Type'
-import { validate as validatePrimitive, isArrayType, isPrimitiveType, getBaseType } from './primitives'
+import { validate as validatePrimitive, isArrayType, isPrimitiveType, getElementaryType } from './primitives'
 
 // The set of properties that a EIP712Domain MAY implement
 export const EIP712DomainProperties = [
@@ -93,7 +93,7 @@ export default function EIP712Domain(def) {
     validate(type, val) {
       if (isArrayType(type)) {
         // Apply the validator to each item in an array, using the base type
-        return val.map(item => this.validate(getBaseType(type), item))
+        return val.map(item => this.validate(getElementaryType(type), item))
       } else if (isPrimitiveType(type)) {
         return validatePrimitive[type](val)
       } else if (type in this.types) {
@@ -119,7 +119,7 @@ export default function EIP712Domain(def) {
         return val.toObject()
       } else if (isArrayType(type)) {
         // Map serializer to array types
-        return val.map(item => this.serialize(getBaseType(type), item))
+        return val.map(item => this.serialize(getElementaryType(type), item))
       } else if (isPrimitiveType(type)) {
         return val
       } else {
@@ -176,4 +176,36 @@ export default function EIP712Domain(def) {
   }
 
   return new Domain(vals)
+}
+
+/**
+ * Extend the EIP712Domain factory with a static method to
+ * @param {Object} request 
+ * @returns {Object} 
+ */
+EIP712Domain.fromSignatureRequest = function fromSignatureRequest(request) {
+  const { types, message: rawMessage, primaryType, domain: rawDomain } = request
+
+  // Create the domain instance
+  const domain = new EIP712Domain(rawDomain)
+  
+  // Create all necessary structure types in this domain
+  // This is currently a hack -- there should be a better way of creating each type definition in the proper order
+  // This assumes that there are no circular references, and will infinite loop if there are
+  const items = Object.entries(types)
+  while (items.length > 0) {
+    const [name, def] = items.shift()
+    if (name === 'EIP712Domain') continue
+    try {
+      domain.createType(name, def)
+    } catch {
+      items.push([name, def])
+    }
+  }
+
+  // Create the message instance
+  const MessageType = domain.types[primaryType]
+  const message = new MessageType(rawMessage)
+
+  return { domain, message }
 }

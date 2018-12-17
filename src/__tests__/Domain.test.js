@@ -13,6 +13,7 @@ const miniDomain = {
   version: '1.0'
 }
 
+
 describe('EIP712Domain', () => {
   it('creates a domain with all domain properties', () => {
     expect(() => new EIP712Domain(domainDef)).not.toThrow()
@@ -119,8 +120,60 @@ describe('toObject', () => {
   })
 })
 
-describe('Types in the Domain', () => {
-  it('Creates a valid signature request', () => {
+describe('fromSignatureRequest', () => {
+  it('creates a simple domain/message', () => {
+    const request = {
+      types: {
+        EIP712Domain: EIP712DomainProperties,
+        LilType: [
+          {name: 'data', type: 'string'}
+        ]
+      },
+      domain: domainDef,
+      primaryType: 'LilType',
+      message: {
+        data: 'Hello World!'
+      }
+    }
+    const { domain, message } = EIP712Domain.fromSignatureRequest(request)
 
+    expect(domain.toObject()).toEqual(domainDef)
+    expect(message.toObject()).toEqual(request.message)
+  })
+
+  it('creates a domain with nested types', () => {
+    const request = {
+      types: {
+        EIP712Domain: EIP712DomainProperties,
+        MiddleType: [
+          {name: 'woop', type: 'string'},
+          {name: 'lil', type: 'LilType'}
+        ],
+        SuperType: [
+          {name: 'woop', type: 'string'},
+          {name: 'lil', type: 'LilType'},
+          {name: 'middle', type: 'MiddleType'}
+        ],
+        LilType: [
+          {name: 'data', type: 'string'}
+        ]
+      },
+      domain: domainDef,
+      primaryType: 'SuperType',
+      message: {
+        woop: 'woop',
+        lil: { data: 'lil type' },
+        middle: {
+          woop: 'woop in the middle',
+          lil: { data: 'lil type in the middle' }
+        }
+      }
+    }
+
+    const { domain, message } = EIP712Domain.fromSignatureRequest(request)
+
+    expect(domain.toObject()).toEqual(domainDef)
+    expect(message.toObject()).toEqual(request.message)
+    expect(message.toSignatureRequest()).toEqual(request)
   })
 })

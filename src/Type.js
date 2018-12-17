@@ -2,6 +2,7 @@ import abi from 'ethereumjs-abi'
 import { keccak256 } from 'js-sha3'
 
 import AbstractType from './AbstractType'
+import { verifyRawSignatureFromAddress } from './verify'
 import { 
   isArrayType, isPrimitiveType, 
   isDynamicType, isAtomicType,
@@ -31,7 +32,7 @@ import {
  * @this    {Domain} The domain object to which the returned type should be associated * 
  * @param   {String}            name      A String to define the type 
  * @param   {Object|Object[]}   defs      The definition of the type's members and their types
- * @returns {Function} the constructor for the new TypeClass
+ * @returns {Function} the constructor for the new StructureType
  */
 export default function Type (primaryType, defs) {
   // Ensure that domain is defined
@@ -55,7 +56,7 @@ export default function Type (primaryType, defs) {
    * type's definition, and provides methods to encode the type in various formats, and 
    * sign it with a provided signer.
    */
-  class TypeClass extends AbstractType {
+  class StructureType extends AbstractType {
     static name = primaryType
     static properties = properties
     static dependencies = dependencies
@@ -144,7 +145,7 @@ export default function Type (primaryType, defs) {
           values.push(Buffer.from(keccak256(this[name].encodeData()), 'hex'))
         } else if (isArrayType(type)) {
           // TODO: Figure out the spec for encoding array types
-          throw new Error('Array types not yet supported')
+          throw new Error('[DEV] Array types not yet supported')
         } else if (isAtomicType(type)) {
           // Atomic types have their encoding defined by the solidity ABI
           types.push(type)
@@ -182,22 +183,33 @@ export default function Type (primaryType, defs) {
     /**
      * Sign the fully encoded version of the current instance with a provided
      * signer.  This is equivalent to the `web3.eth.signTypedData` function.
-     * @param   {Object} signer The signer object, configured with a private key and exposing a `sign` method
+     * @param   {Object} signer The signer function, which takes a buffer and return a signature
      * @returns {String} the signed, encoded piece of data
      */
     sign(signer) {
-      if (!(signer && signer.sign)) {
-        throw new Error('Must provide a signer object with a sign() method')
+      if (typeof signer !== 'function') {
+        throw new Error('Must provide a signer function')
       }
+      
+      return signer(this.signHash())
+    }
 
-      return signer.sign(this.signHash())
+    /**
+     * Verify a signature made by an address over this object
+     * @param   {Object}  signature
+     * @param   {String}  address
+     * @returns {Boolean} whether the given signature is valid over this object
+     */
+    verifySignature(signature, address) {
+      const hash = this.signHash()
+      return verifyRawSignatureFromAddress(hash, signature, address)
     }
   }
 
-  // Save the new TypeClass to the domain
-  domain.types[primaryType] = TypeClass
+  // Save the new StructureType to the domain
+  domain.types[primaryType] = StructureType
 
-  return TypeClass
+  return StructureType
 }
 
 /**

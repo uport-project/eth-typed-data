@@ -4,6 +4,11 @@ describe('AbstractType', () => {
   it('constructs', () => {
     expect(() => new AbstractType()).not.toThrow()
   })
+
+  it('throws errors on abstract methods', () => {
+    expect(() => (new AbstractType()).encodeData()).toThrow()
+    expect(() => (new AbstractType()).toObject()).toThrow()
+  })
 })
 
 describe('Concrete subtypes of abstract type', () => {

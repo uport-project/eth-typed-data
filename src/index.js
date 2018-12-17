@@ -1,4 +1,5 @@
 import EIP712Domain from './Domain'
-import Type from './Type'
+import { verify } from './verify'
 
-export { Type, EIP712Domain }
+export default EIP712Domain
+export { verify }
