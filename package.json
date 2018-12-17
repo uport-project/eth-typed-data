@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "test": "jest --coverage",
-    "build": "./node_modules/.bin/babel src -d lib"
+    "build": "./node_modules/.bin/babel src -d lib",
+    "docs": "jsdoc2md -f src/*.js -c docs/jsdoc.conf > docs/reference/index.md"
   },
   "repository": {
     "type": "git",
@@ -31,7 +32,9 @@
     "babel-core": "^7.0.0-bridge.0",
     "babel-jest": "^23.6.0",
     "elliptic": "^6.4.1",
-    "jest": "^23.6.0"
+    "jest": "^23.6.0",
+    "jsdoc": "^3.5.5",
+    "jsdoc-to-markdown": "^4.0.1"
   },
   "dependencies": {
     "@babel/runtime": "^7.1.2",
