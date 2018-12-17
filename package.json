@@ -1,8 +1,8 @@
 {
   "name": "eth-typed-data",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "A library to simplifiy interacting with and signing EIP712 typed data",
-  "main": "src/index.js",
+  "main": "lib/index.js",
   "scripts": {
     "test": "jest --coverage",
     "build": "./node_modules/.bin/babel src -d lib",
