@@ -28,11 +28,11 @@ The domain has the ability to define new struct types (modeled after Solidity `s
 To create a new Structure type in a domain, call `createType` with a list of objects `{name, type}`, giving the string name and string type name for each property of the new Structure type.  
 
 ```javascript
-const Person = myDomain.createType([
+const Person = myDomain.createType('Person', [
   { name: 'name', type: 'string' },
   { name: 'wallet', type: 'address'}
 ])
-const Mail = myDomain.createType([
+const Mail = myDomain.createType('Mail', [
   {name: 'to', type: 'Person'},
   {name: 'from', type: 'Person'},
   {name: 'contents', type: 'string'}
@@ -40,11 +40,11 @@ const Mail = myDomain.createType([
 ```
 Alternatively, and object mapping string names to string types can be used in the same way. 
 ```javascript
-const Person = myDomain.createType({
+const Person = myDomain.createType('Person', {
   name: 'string',
   wallet: 'address'
 })
-const Mail = myDomain.createType({
+const Mail = myDomain.createType('Mail', {
   to: 'Person',
   from: 'Person',
   contents: 'string'
