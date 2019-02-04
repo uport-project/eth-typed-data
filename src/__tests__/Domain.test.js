@@ -176,4 +176,20 @@ describe('fromSignatureRequest', () => {
     expect(message.toObject()).toEqual(request.message)
     expect(message.toSignatureRequest()).toEqual(request)
   })
+
+  it('throws an error when given a domain with cyclic dependencies', () => {
+    const request = {
+      types: {
+        EIP712Domain: EIP712DomainProperties,
+        A: [{name: 'b', type: 'B'}],
+        B: [{name: 'c', type: 'C'}],
+        C: [{name: 'a', type: 'A'}]
+      },
+      domain: domainDef,
+      primaryType: 'A',
+      message: {A: {B: {C: 'A'}}} 
+    }
+
+    expect(() => EIP712Domain.fromSignatureRequest(request)).toThrow()
+  })
 })
