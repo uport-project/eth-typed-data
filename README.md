@@ -2,6 +2,8 @@
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com)
 [![Twitter Follow](https://img.shields.io/twitter/follow/uport_me.svg?style=social&label=Follow)](https://twitter.com/uport_me)
 
+*Thanks for checking out EthTypedData!  This library is currently in beta, and we don't yet recommend using it in production applications -- please file an issue if you encounter any bugs or would like to request a feature!*
+
 With the new [EIP712 specification](https://eips.ethereum.org/EIPS/eip-712) poised to be the new standard for representing data structures in the ethereum world, the uPort team has developed a convenient library to interact with types and domains as defined by the spec.  In particular, we've made it easy to manage domains with multiple different types, and provide convenient methods for encoding, hashing, and signing EIP712 typed data structures, as well as for converting objects to signature requests for use with `eth_signTypedData`.
 
 ## Creating a Domain
