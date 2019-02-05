@@ -1,4 +1,4 @@
-import { validate, isPrimitiveType, isAtomicType, isDynamicType, isArrayType, getElementaryType } from '../primitives'
+import { validate, isPrimitiveType, isAtomicType, isDynamicType, isArrayType, isNotStructureType, getElementaryType } from '../primitives'
 
 const POWERS = [1, 2, 4, 8, 16, 32]
 
@@ -60,6 +60,15 @@ describe('type indicators', () => {
   it('identifies elementary types of array types', () => {
     expect(getElementaryType('scoopity[]')).toEqual('scoopity')
     expect(() => getElementaryType('woopity')).toThrow()
+  })
+
+  it('identifies arbitrarily nested arrays of primitive types as non-structure types', () => {
+    expect(isNotStructureType('bool')).toBe(true)
+    expect(isNotStructureType('bool[]')).toBe(true)
+    expect(isNotStructureType('string[][][][][][][][][][][][][][][]')).toBe(true)
+
+    expect(isNotStructureType('MyType')).toBe(false)
+    expect(isNotStructureType('YourType[]')).toBe(false)
   })
 })
 

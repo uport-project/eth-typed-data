@@ -55,6 +55,18 @@ export function isPrimitiveType(type) {
   return isAtomicType(type) || isDynamicType(type)
 }
 
+/**
+ * Determine if the argument is not a structure type, i.e. it is a primitive type or an
+ * arbitrarily nested array of structure types
+ * @param {String} type
+ * @returns {Boolean}
+ */
+export function isNotStructureType(type) {
+  if (isPrimitiveType(type)) return true
+  if (isArrayType(type)) return isNotStructureType(getElementaryType(type))
+  return false
+}
+
 // /**
 //  * Validation utility function to switch on javascript types and
 //  * handle each with a custom function

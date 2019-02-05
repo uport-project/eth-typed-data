@@ -3,7 +3,7 @@ import { keccak256 } from 'js-sha3'
 
 import AbstractType from './AbstractType'
 import Type from './Type'
-import { validate as validatePrimitive, isArrayType, isPrimitiveType, getElementaryType } from './primitives'
+import { validate as validatePrimitive, isArrayType, isPrimitiveType, getElementaryType, isNotStructureType } from './primitives'
 
 // The set of properties that a EIP712Domain MAY implement
 export const EIP712DomainProperties = [
@@ -107,7 +107,7 @@ export default function EIP712Domain(def) {
     /**
      * Recursively expand an object containing instances of structure type classes,
      * and return a bare javascript object with the same hierarchical structure
-     * Conceptually the opposite of this.validate
+     * Conceptually the opposite of @see this.validate
      * @param   {String}  type the string name of the type of value being serialized
      * @param   {Any}     val  the type instance or primitive literal being serialized
      * @returns {Object}
@@ -179,9 +179,10 @@ export default function EIP712Domain(def) {
 }
 
 /**
- * Extend the EIP712Domain factory with a static method to
- * @param {Object} request 
- * @returns {Object} 
+ * Create a message object and domain from a raw signature request object. 
+ * @param   {Object} request An object representing a signature request
+ * @returns {Object} the constructed {domain} and {message} instances
+ * @throws  {Error} if signature request contains cyclic dependencies
  */
 EIP712Domain.fromSignatureRequest = function fromSignatureRequest(request) {
   const { types, message: rawMessage, primaryType, domain: rawDomain } = request
@@ -189,17 +190,37 @@ EIP712Domain.fromSignatureRequest = function fromSignatureRequest(request) {
   // Create the domain instance
   const domain = new EIP712Domain(rawDomain)
   
+  // Perform a (reverse) topological sort for dependency resolution, keeping track of depth first search postorder 
+  const postorder = [] 
+  // Keep track of already visited types, as well as potential cycles
+  const marked = new Set(), cyclecheck = new Set()
+  
+  // Define recursive depth-first search with cycle detection
+  const dfs = type => {
+    for (const {type: subtype} of types[type]) {
+      if (marked.has(subtype) || isNotStructureType(subtype)) continue
+      if (cyclecheck.has(subtype)) {
+        throw new Error('Cannot construct domain from signature request with cyclic dependencies')
+      }
+      cyclecheck.add(subtype)
+      dfs(subtype)
+    }
+    postorder.push(type)
+    marked.add(type)
+  }
+
+  // Perform the search
+  for (const type of Object.keys(types)) {
+    if (type !== 'EIP712Domain' && !marked.has(type)) { 
+      dfs(type)
+    }
+  }
+
   // Create all necessary structure types in this domain
-  // This is currently a hack -- there should be a better way of creating each type definition in the proper order
-  // This assumes that there are no circular references, and will infinite loop if there are
-  const items = Object.entries(types)
-  while (items.length > 0) {
-    const [name, def] = items.shift()
-    if (name === 'EIP712Domain') continue
-    try {
-      domain.createType(name, def)
-    } catch {
-      items.push([name, def])
+  // Iterate in postorder to guarantee dependencies are satisfied
+  for (const name of postorder) {
+    if (name !== 'EIP712Domain') {
+      domain.createType(name, types[name])
     }
   }
 
@@ -209,3 +230,4 @@ EIP712Domain.fromSignatureRequest = function fromSignatureRequest(request) {
 
   return { domain, message }
 }
+
