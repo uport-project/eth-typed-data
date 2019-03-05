@@ -1,13 +1,13 @@
-export const ATOMICS = [
+export const ATOMICS = new Set([
   'bytes1', 'bytes2', 'bytes4', 'bytes8', 'bytes16', 'bytes32',
   'uint8', 'uint16', 'uint32', 'uint64', 'uint128', 'uint256',
   'int8', 'int16', 'int32', 'int64', 'int128', 'int256',
   'address', 'bool'
-]
+])
 
-export const DYNAMICS = [
+export const DYNAMICS = new Set([
   'string', 'bytes'
-]
+])
 
 /**
  * Return true if the argument is an array type
@@ -34,7 +34,7 @@ export function getElementaryType(type) {
  * @returns {Boolean}
  */
 export function isAtomicType(type) {
-  return ATOMICS.includes(type)
+  return ATOMICS.has(type)
 }
 
 /**
@@ -43,7 +43,7 @@ export function isAtomicType(type) {
  * @returns {Boolean}
  */
 export function isDynamicType(type) {
-  return DYNAMICS.includes(type)
+  return DYNAMICS.has(type)
 }
 
 /**
@@ -67,29 +67,34 @@ export function isNotStructureType(type) {
   return false
 }
 
-// /**
-//  * Validation utility function to switch on javascript types and
-//  * handle each with a custom function
-//  * @param   {Object}    handlers  An object mapping javascript types to a validation function for that type
-//  * @returns {Function}  a validation function which will delegate to one of the provided validators
-//  *                      according to the type of the input
-//  */
-// function handleByType(target, handlers) {
-//   return input => {
-//     const jstype = typeof input
-//     if (jstype in handlers) return handlers[jstype](input)
-//     throw new Error(`Cannot convert javascript type ${jstype} to solidity type ${target}`)
-//   }
-// }
+/**
+ * Return a validation function which will switch on the javascript type of the sole argument
+ * and handle each case with a function for that type, defined by the mapping in {handlers}
+ * @param   {String}    target    The string name of the solidity primitive type to which we are converting
+ * @param   {Object}    handlers  An object mapping javascript types to a validation function for that type
+ * @returns {Function}  a validation function which will delegate to one of the provided validators
+ *                      according to the type of the input
+ */
+function handleByType(target, handlers) {
+  return input => {
+    const jstype = typeof input
+    if (jstype in handlers) return handlers[jstype](input)
+    throw new Error(`Cannot convert javascript type ${jstype} to solidity type ${target}`)
+  }
+}
 
-// /**
-//  * Throw an error with a given message. This is convenient for throwing
-//  * an error inside an expression without having to create a full function.
-//  * @param {String} message message for the error to be thrown
-//  */
-// function reject(message) {
-//   throw new Error(message)
-// }
+/**
+ * Throw an error with a given message. This is convenient for throwing
+ * an error inside an expression without having to create a full function.
+ * @param {String} message message for the error to be thrown
+ */
+function reject(message) {
+  throw new Error(message)
+}
+
+function inRange(lo, hi, type) {
+  return x => x >= lo && x < hi ? x : reject(`Value ${x} is outside the valid range for type ${type}`)
+}
 
 /**
  * Validation functions for unifying javascript representations of solidity types
@@ -107,18 +112,19 @@ export const validate = {
   uint64: x => x,
   uint128: x => x,
   uint256: x => x,
-  int8: x => x,
+  int8: handleByType('int8', {
+    number: inRange(-127, 128, 'int8'),
+    string: ,
+  }),
   int16: x => x,
   int32: x => x,
   int64: x => x,
   int128: x => x,
   int256: x => x,
-  address: x => x,
-  // approach for type mapping
-  // address: handleByType('address', {
-  //   string: x => x.slice(2) === '0x' ? x : `0x${x}`,
-  //   object: x => x instanceof Buffer ? `0x${x.toString('hex')}` : reject('Cannot coerce object to address: must be string or Buffer')
-  // }),
+  address: handleByType('address', {
+    string: x => x.slice(2) === '0x' ? x : `0x${x}`,
+    object: x => x instanceof Buffer ? `0x${x.toString('hex')}` : reject('Cannot coerce object to address: must be string or Buffer')
+  }),
   bool: x => x,
   string: x => x,
   bytes: x => Buffer.from(x)
