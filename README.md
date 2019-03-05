@@ -183,4 +183,4 @@ The primitive types in the EIP712 spec are divided into two categories:
   - `bytes`, `string`
 
 **TODO: Table defining each type and equivalent/compatible javascript type and validation**
-
+Primitive validation is in progress on the `feat/validate-primitives` branch of this repo.  A working version of this concept requires that the valid mappings from js types to solidity types are established, and then implemented in `src/primitives.js`.  There is a description of my approach to this problem in that file, which revolves around defining objects, with string keys corresponding to JS native types, and function values which perform a conversion or throw an error, depending on the input value.
