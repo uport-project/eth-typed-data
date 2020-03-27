@@ -145,7 +145,8 @@ export default function Type (primaryType, defs) {
           values.push(Buffer.from(keccak256(this[name].encodeData()), 'hex'))
         } else if (isArrayType(type)) {
           // TODO: Figure out the spec for encoding array types
-          throw new Error('[DEV] Array types not yet supported')
+          types.push('bytes32')
+          values.push(Buffer.from(keccak256(this[name].map(item => item.encodeData()).join()), 'hex'))
         } else if (isAtomicType(type)) {
           // Atomic types have their encoding defined by the solidity ABI
           types.push(type)
@@ -227,6 +228,11 @@ function validateTypeDefinition({name, type}, domain) {
   if (typeof type === 'object') {
     // TODO: Allow recursive type defintions?
     throw new Error('Nested type definitions not supported')
+  } else if (isArrayType(type)){
+    var primitiveType = type.substring(0, type.lastIndexOf("["));
+    if (!primitiveType in domain.types){
+      throw new Error(`Type ${primitiveType} is undefined in this domain`)
+    }
   } else if (!isPrimitiveType(type) && !(type in domain.types)) {
     // Refuse undefined, non-primitive types
     throw new Error(`Type ${type} is undefined in this domain`)
@@ -246,9 +252,14 @@ function validateTypeDefinition({name, type}, domain) {
 function findDependencies(props, domain, found=[]) {
   for (let {type} of props) {
     if (isPrimitiveType(type)) continue
+    var dependentTypeName = type
+    if (isArrayType(type)){
+      dependentTypeName = type.substring(0, type.lastIndexOf("["));
+    }
+
     // Merge the found array with new dependencies of 
     found = found.concat(
-      [type, ...findDependencies(domain.types[type].properties, domain, found)]
+      [dependentTypeName, ...findDependencies(domain.types[dependentTypeName].properties, domain, found)]
         .filter(t => !found.includes(t))
     )
   }
