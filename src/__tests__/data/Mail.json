@@ -40,9 +40,9 @@
     "Mail": {
       "encodeType": "Mail(Person from,Person[] to,string contents)Person(string name,address wallet)",
       "typeHash": "0xdd57d9596af52b430ced3d5b52d4e3d5dccfdf3e0572db1dcf526baad311fbd1",
-      "encodeData": "0xdd57d9596af52b430ced3d5b52d4e3d5dccfdf3e0572db1dcf526baad311fbd1fc71e5fa27ff56c350aa531bc129ebdf613b772b6604664f5d8dbe21b85eb0c872ea07cf404427eb52aed74d9998e238434f046d95c4ff7802d628628bf77a16b5aadf3154a261abdd9086fc627b61efca26ae5702701d05cd2305f7c52a2fc8",
-      "hashStruct": "0x74d81a21341d4ee3434cd75927bce467aeba1fa381760f07f95d9daee6f21e2b",
-      "signHash": "0x89f2c3d1cb4d1aa3e9c41f664a590fe73bfccdf8be1f8e03b79f5c099a0bd090"
+      "encodeData": "0xdd57d9596af52b430ced3d5b52d4e3d5dccfdf3e0572db1dcf526baad311fbd1fc71e5fa27ff56c350aa531bc129ebdf613b772b6604664f5d8dbe21b85eb0c8e2ec7c01837071382eadbfdffa6c4c47de741fa0fda906874da49c4192dbe6edb5aadf3154a261abdd9086fc627b61efca26ae5702701d05cd2305f7c52a2fc8",
+      "hashStruct": "0xb737d8ce302eba53138b4a278391f7174db4fe0efb501e813572ee339d5e7751",
+      "signHash": "0xe3e147d255f92f5a9de155defefb2816b1ca970e975b38baadb0cca27e733d36"
     },
     "domainSeparator": "0xf2cee375fa42b42143804025fc449deafd50cc031ca257e0b194a650a912090f"
   }
