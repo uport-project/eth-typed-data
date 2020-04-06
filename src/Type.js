@@ -257,6 +257,7 @@ function findDependencies(props, domain, found=[]) {
     var dependentTypeName = type
     if (isArrayType(type)){
       dependentTypeName = type.substring(0, type.lastIndexOf("["));
+      if (isPrimitiveType(dependentTypeName)) continue
     }
 
     // Merge the found array with new dependencies of 
