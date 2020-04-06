@@ -199,6 +199,9 @@ EIP712Domain.fromSignatureRequest = function fromSignatureRequest(request) {
   const dfs = type => {
     for (const {type: subtype} of types[type]) {
       if (marked.has(subtype) || isNotStructureType(subtype)) continue
+      if (isArrayType(subtype)){
+        subtype = subtype.substring(0,subtype.indexOf("["))
+      }
       if (cyclecheck.has(subtype)) {
         throw new Error('Cannot construct domain from signature request with cyclic dependencies')
       }
