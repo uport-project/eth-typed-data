@@ -120,6 +120,24 @@ export default function Type (primaryType, defs) {
       }
     }
 
+    encodeField(type, value){
+      if (isDynamicType(type)){
+        return {type:'bytes32', value:Buffer.from(keccak256(value), 'hex')}
+      } else if (type in domain.types){
+        // Structure Types are recursively encoded and hashed
+        return {type:"bytes32", value: Buffer.from(keccak256(value.encodeData()), 'hex')}
+      } else if (isArrayType(type)){
+        // Array types are the hash of their encoded members concatenated
+        var innerType = type.slice(0, type.lastIndexOf('['));
+        var encodedValues = value.map(item => this.encodeField(innerType, item));
+        return {type:'bytes32', value: Buffer.from(keccak256(abi.rawEncode(encodedValues.map(v=>v.type), encodedValues.map(v=>v.value))), 'hex')}
+      } else if (isAtomicType(type)){
+        return {type: type, value:value}
+      } else {
+        throw new Error(`Unknown type: ${type}`)
+      }
+    }
+
     /**
      * @override
      * Return the EIP712 data encoding of this instance, padding each member
@@ -135,24 +153,9 @@ export default function Type (primaryType, defs) {
       let values = [Buffer.from(this.constructor.typeHash(), 'hex')]
 
       for (const {type, name} of this.constructor.properties) {
-        if (isDynamicType(type)) {
-          // Dynamic types are hashed
-          types.push('bytes32')
-          values.push(Buffer.from(keccak256(this[name]), 'hex'))
-        } else if (type in domain.types) {
-          // Structure Types are recursively encoded and hashed
-          types.push('bytes32')
-          values.push(Buffer.from(keccak256(this[name].encodeData()), 'hex'))
-        } else if (isArrayType(type)) {
-          // TODO: Figure out the spec for encoding array types
-          throw new Error('[DEV] Array types not yet supported')
-        } else if (isAtomicType(type)) {
-          // Atomic types have their encoding defined by the solidity ABI
-          types.push(type)
-          values.push(this[name])
-        } else {
-          throw new Error(`Unknown type: ${type}`)
-        }
+        var {type:t,value:v} = this.encodeField(type, this[name])
+        types.push(t)
+        values.push(v)
       }
 
       return abi.rawEncode(types, values)
@@ -227,6 +230,11 @@ function validateTypeDefinition({name, type}, domain) {
   if (typeof type === 'object') {
     // TODO: Allow recursive type defintions?
     throw new Error('Nested type definitions not supported')
+  } else if (isArrayType(type)){
+    var primitiveType = type.substring(0, type.lastIndexOf("["));
+    if (!primitiveType in domain.types){
+      throw new Error(`Type ${primitiveType} is undefined in this domain`)
+    }
   } else if (!isPrimitiveType(type) && !(type in domain.types)) {
     // Refuse undefined, non-primitive types
     throw new Error(`Type ${type} is undefined in this domain`)
@@ -246,9 +254,15 @@ function validateTypeDefinition({name, type}, domain) {
 function findDependencies(props, domain, found=[]) {
   for (let {type} of props) {
     if (isPrimitiveType(type)) continue
+    var dependentTypeName = type
+    if (isArrayType(type)){
+      dependentTypeName = type.substring(0, type.lastIndexOf("["));
+      if (isPrimitiveType(dependentTypeName)) continue
+    }
+
     // Merge the found array with new dependencies of 
     found = found.concat(
-      [type, ...findDependencies(domain.types[type].properties, domain, found)]
+      [dependentTypeName, ...findDependencies(domain.types[dependentTypeName].properties, domain, found)]
         .filter(t => !found.includes(t))
     )
   }
